@@ -1,0 +1,8 @@
+name: WaypointPlugin
+version: 1.0
+main: de.moritz.WaypointPlugin
+api-version: 1.21
+commands:
+  waypoint:
+    description: Opens the waypoint menu
+    usage: /waypoint

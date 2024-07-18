@@ -11,7 +11,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 public class MenuListener implements Listener {
     @EventHandler
     public void onMenuClick(InventoryClickEvent event) {
-        if (event.getView().getTitle().equals(ChatColor.GREEN + "Wegpunkte")) {
+        String title = event.getView().getTitle();
+        if (title.equals(ChatColor.GREEN + "Wegpunkte") || title.equals(ChatColor.BLUE + "Select Icon")) {
             event.setCancelled(true); // Verhindert, dass Spieler Gegenstände im Menü bewegen
             WaypointMenu.handleMenuClick(event); // Delegiert die Klickbehandlung an die WaypointMenu-Klasse
         }

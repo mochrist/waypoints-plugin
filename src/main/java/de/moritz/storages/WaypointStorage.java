@@ -1,8 +1,10 @@
 package de.moritz.storages;
 
-import de.moritz.Database;
+import de.moritz.WaypointPlugin;
+import de.moritz.databases.WaypointsDatabase;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.sql.*;
@@ -10,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class WaypointStorage {
     private static Map<Player, List<Map<String, Object>>> playerWaypoints = new HashMap<>();
@@ -19,8 +20,8 @@ public class WaypointStorage {
         playerWaypoints.putIfAbsent(player, new ArrayList<>());
         playerWaypoints.get(player).add(waypoint);
 
-        try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement("INSERT INTO waypoints (player_uuid, name, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?)")) {
+        try (Connection conn = WaypointsDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement("INSERT INTO waypoints (player_uuid, name, world, x, y, z, icon) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
             ps.setString(1, player.getUniqueId().toString());
             ps.setString(2, (String) waypoint.get("name"));
             Location location = (Location) waypoint.get("location");
@@ -28,6 +29,7 @@ public class WaypointStorage {
             ps.setDouble(4, location.getX());
             ps.setDouble(5, location.getY());
             ps.setDouble(6, location.getZ());
+            ps.setString(7, ((Material) waypoint.get("icon")).name());
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,8 +45,8 @@ public class WaypointStorage {
 
     private static void loadWaypoints(Player player) {
         List<Map<String, Object>> waypoints = new ArrayList<>();
-        try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT name, world, x, y, z FROM waypoints WHERE player_uuid = ?")) {
+        try (Connection conn = WaypointsDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT name, world, x, y, z, icon FROM waypoints WHERE player_uuid = ?")) {
             ps.setString(1, player.getUniqueId().toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -57,6 +59,7 @@ public class WaypointStorage {
                         rs.getDouble("z")
                 );
                 waypoint.put("location", location);
+                waypoint.put("icon", Material.valueOf(rs.getString("icon")));
                 waypoints.add(waypoint);
             }
         } catch (SQLException e) {

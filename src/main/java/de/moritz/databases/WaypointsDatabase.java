@@ -1,4 +1,4 @@
-package de.moritz;
+package de.moritz.databases;
 
 import java.io.File;
 import java.sql.Connection;
@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class Database {
+public class WaypointsDatabase {
     private static Connection connection;
 
     public static void connect() {
@@ -36,6 +36,7 @@ public class Database {
 
     private static void initialize() {
         try (Statement statement = connection.createStatement()) {
+            // Update table creation to include the icon column
             String createTableSQL = "CREATE TABLE IF NOT EXISTS waypoints (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "player_uuid TEXT, " +
@@ -43,8 +44,20 @@ public class Database {
                     "world TEXT, " +
                     "x DOUBLE, " +
                     "y DOUBLE, " +
-                    "z DOUBLE)";
+                    "z DOUBLE, " +
+                    "icon TEXT)";
             statement.execute(createTableSQL);
+
+            // Update existing table to add the icon column if it doesn't exist
+            String addColumnSQL = "ALTER TABLE waypoints ADD COLUMN icon TEXT";
+            try {
+                statement.execute(addColumnSQL);
+            } catch (SQLException e) {
+                // This will throw an error if the column already exists, so we ignore it
+                if (!e.getMessage().contains("duplicate column name")) {
+                    throw e;
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -9,5 +9,14 @@ public class WaypointPlugin extends JavaPlugin {
     public void onEnable() {
         this.getCommand("waypoint").setExecutor(new WaypointCommand());
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
+
+        // Initialisieren der Datenbank
+        Database.connect();
+    }
+
+    @Override
+    public void onDisable() {
+        // Trennen der Datenbankverbindung
+        Database.disconnect();
     }
 }

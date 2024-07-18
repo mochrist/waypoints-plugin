@@ -9,7 +9,8 @@ import de.moritz.menus.WaypointMenu;
 public class WaypointCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player player) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
             WaypointMenu.openMenu(player);
         }
         return true;

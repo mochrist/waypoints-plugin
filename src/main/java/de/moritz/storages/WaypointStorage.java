@@ -15,6 +15,7 @@ import java.util.Map;
 
 public class WaypointStorage {
     private static Map<Player, List<Map<String, Object>>> playerWaypoints = new HashMap<>();
+    private static Map<Player, Location> lastDeathLocations = new HashMap<>();
 
     public static void addWaypoint(Player player, Map<String, Object> waypoint) {
         playerWaypoints.putIfAbsent(player, new ArrayList<>());
@@ -82,5 +83,13 @@ public class WaypointStorage {
             e.printStackTrace();
         }
         playerWaypoints.put(player, waypoints);
+    }
+
+    public static void setLastDeathLocation(Player player, Location location) {
+        lastDeathLocations.put(player, location);
+    }
+
+    public static Location getLastDeathLocation(Player player) {
+        return lastDeathLocations.get(player);
     }
 }

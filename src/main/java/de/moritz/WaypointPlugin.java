@@ -9,9 +9,9 @@ public class WaypointPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.getCommand("waypoint").setExecutor(new WaypointCommand());
+        this.getCommand("waypoint").setTabCompleter(new WaypointTabCompleter());
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
-        // Initialisieren der Datenbank
-        WaypointsDatabase.connect();
+        // Stellen Sie sicher, dass Ihre Datenbankverbindung hier initialisiert wird, falls erforderlich
     }
 
     @Override

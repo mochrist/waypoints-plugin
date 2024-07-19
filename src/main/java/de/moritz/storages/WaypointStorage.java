@@ -43,6 +43,22 @@ public class WaypointStorage {
         return playerWaypoints.getOrDefault(player, new ArrayList<>());
     }
 
+    public static void removeWaypoint(Player player, String waypointName) {
+        List<Map<String, Object>> waypoints = playerWaypoints.get(player);
+        if (waypoints != null) {
+            waypoints.removeIf(waypoint -> waypointName.equals(waypoint.get("name")));
+        }
+
+        try (Connection conn = WaypointsDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement("DELETE FROM waypoints WHERE player_uuid = ? AND name = ?")) {
+            ps.setString(1, player.getUniqueId().toString());
+            ps.setString(2, waypointName);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void loadWaypoints(Player player) {
         List<Map<String, Object>> waypoints = new ArrayList<>();
         try (Connection conn = WaypointsDatabase.getConnection();
@@ -68,4 +84,3 @@ public class WaypointStorage {
         playerWaypoints.put(player, waypoints);
     }
 }
-

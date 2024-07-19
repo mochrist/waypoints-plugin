@@ -8,6 +8,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Map;
+
 
 public class WaypointCommand implements CommandExecutor {
     @Override
@@ -49,23 +52,23 @@ public class WaypointCommand implements CommandExecutor {
     private void listWaypoints(Player player) {
         List<Map<String, Object>> waypoints = WaypointStorage.getWaypoints(player);
         if (waypoints.isEmpty()) {
-            player.sendMessage(ChatColor.RED + "You have no waypoints.");
+            player.sendMessage(ChatColor.RED + "Du hast keine Markierungen.");
         } else {
-            player.sendMessage(ChatColor.GREEN + "Your waypoints:");
+            player.sendMessage(ChatColor.GREEN + "Deine Markierungen:");
             for (Map<String, Object> waypoint : waypoints) {
                 String name = (String) waypoint.get("name");
                 Location location = (Location) waypoint.get("location");
                 TextComponent message = new TextComponent(ChatColor.AQUA + name + ChatColor.GRAY + " - " +
-                        "X: " + location.getX() + ", " +
-                        "Y: " + location.getY() + ", " +
-                        "Z: " + location.getZ());
+                        "X: " + (int)location.getX() + ", " +
+                        "Y: " + (int)location.getY() + ", " +
+                        "Z: " + (int)location.getZ());
                 message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/waypoint tp " + name));
 
                 // Hinzufügen des Hover-Effekts
-                String hoverText = ChatColor.GOLD + "Teleport to " + ChatColor.AQUA + name + ChatColor.GOLD + "\n" +
-                        "X: " + location.getX() + "\n" +
-                        "Y: " + location.getY() + "\n" +
-                        "Z: " + location.getZ();
+                String hoverText = ChatColor.GOLD + "Teleport zu " + ChatColor.AQUA + name + ChatColor.GOLD + "\n" +
+                        "X: " + (int)location.getX() + "\n" +
+                        "Y: " + (int)location.getY() + "\n" +
+                        "Z: " + (int)location.getZ();
                 message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(hoverText).create()));
 
                 player.spigot().sendMessage(message);
@@ -75,23 +78,44 @@ public class WaypointCommand implements CommandExecutor {
 
     private void removeWaypoint(Player player, String waypointName) {
         WaypointStorage.removeWaypoint(player, waypointName);
-        player.sendMessage(ChatColor.GREEN + "Waypoint " + waypointName + " has been removed.");
+        player.sendMessage(ChatColor.GREEN + "Markierung " + waypointName + " wurde entfernt.");
     }
 
     private void teleportToWaypoint(Player player, String waypointName) {
         List<Map<String, Object>> waypoints = WaypointStorage.getWaypoints(player);
         for (Map<String, Object> waypoint : waypoints) {
             if (waypointName.equals(waypoint.get("name"))) {
-                if (player.getInventory().contains(Material.DIAMOND)) {
-                    player.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
-                    player.teleport((Location) waypoint.get("location"));
-                    player.sendMessage(ChatColor.AQUA + "Teleported to waypoint " + waypointName + " for 1 diamond.");
+                Location location = (Location) waypoint.get("location");
+                if (isSafeLocation(location)) {
+                    if (player.getInventory().contains(Material.DIAMOND)) {
+                        player.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
+                        player.teleport(location);
+                        player.sendMessage(ChatColor.AQUA + "Für einen Diamanten zur Markierung " + waypointName + " teleportiert.");
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Du benötigst einen Diamanten um dich zu teleportieren.");
+                    }
                 } else {
-                    player.sendMessage(ChatColor.RED + "You need 1 diamond to teleport to this waypoint.");
+                    player.sendMessage(ChatColor.RED + "The waypoint location is not safe for teleportation.");
                 }
                 return;
             }
         }
-        player.sendMessage(ChatColor.RED + "Waypoint " + waypointName + " not found.");
+        player.sendMessage(ChatColor.RED + "Markierung " + waypointName + " nicht gefunden.");
+    }
+
+    public static boolean isSafeLocation(Location location) {
+        Block feet = location.getBlock();
+        if (!feet.getType().isTransparent() && !feet.getLocation().add(0, 1, 0).getBlock().getType().isTransparent()) {
+            return false; // not transparent (will suffocate)
+        }
+        Block head = feet.getRelative(BlockFace.UP);
+        if (!head.getType().isTransparent()) {
+            return false; // not transparent (will suffocate)
+        }
+        Block ground = feet.getRelative(BlockFace.DOWN);
+        if (!ground.getType().isSolid()) {
+            return false; // not solid
+        }
+        return true;
     }
 }

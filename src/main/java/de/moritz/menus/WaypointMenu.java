@@ -19,7 +19,7 @@ import java.util.Map;
 public class WaypointMenu {
     public static Map<Player, Map<String, Object>> pendingWaypoints = new HashMap<>();
     private static final Material[] ICON_CHOICES = {
-            Material.DIAMOND, Material.GOLD_INGOT, Material.IRON_INGOT, Material.EMERALD, Material.REDSTONE
+            Material.DIAMOND, Material.RED_BED,Material.GOLD_INGOT, Material.DIAMOND_PICKAXE, Material.IRON_INGOT, Material.COOKED_PORKCHOP,Material.REDSTONE, Material.APPLE
     };
 
     public static void openMenu(Player player) {
@@ -35,9 +35,9 @@ public class WaypointMenu {
 
             Location location = (Location) waypoint.get("location");
             List<String> lore = new ArrayList<>();
-            lore.add(ChatColor.GRAY + "X: " + location.getX());
-            lore.add(ChatColor.GRAY + "Y: " + location.getY());
-            lore.add(ChatColor.GRAY + "Z: " + location.getZ());
+            lore.add(ChatColor.GRAY + "X: " + (int)location.getX());
+            lore.add(ChatColor.GRAY + "Y: " + (int)location.getY());
+            lore.add(ChatColor.GRAY + "Z: " + (int)location.getZ());
             waypointItemMeta.setLore(lore);
 
             waypointItem.setItemMeta(waypointItemMeta);
@@ -80,7 +80,7 @@ public class WaypointMenu {
                         break;
                     }
                 }
-            } else if (title.equals(ChatColor.BLUE + "Select Icon")) {
+            } else if (title.equals(ChatColor.BLUE + "Icon ausgewählt")) {
                 Map<String, Object> waypointData = pendingWaypoints.get(player);
                 if (waypointData != null) {
                     waypointData.put("icon", clickedItem.getType());
@@ -88,7 +88,7 @@ public class WaypointMenu {
                     player.closeInventory();
                     String waypointName = (String) waypointData.get("name");
                     WaypointStorage.addWaypoint(player, waypointData);
-                    player.sendMessage(ChatColor.GREEN + "Waypoint " + waypointName + " added.");
+                    player.sendMessage(ChatColor.GREEN + "Markierung " + waypointName + " hinzugefügt.");
                     pendingWaypoints.remove(player); // Entferne den Eintrag, nachdem der Wegpunkt hinzugefügt wurde
                 }
             }
